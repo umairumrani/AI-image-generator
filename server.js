@@ -37,30 +37,59 @@ app.post("/api/generate", async (req, res) => {
       process.env.STABILITY_API_KEY ||
       "sk-lKVFlxV2g1QDr0wTPVwz9nzFEbmyH1SGIY1RytHAo9xgazTF";
 
-    // Call Stability AI API
-    const response = await axios.post(
-      "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
-      {
-        text_prompts: [
-          {
-            text: prompt,
-            weight: 1,
-          },
-        ],
-        cfg_scale: 7,
-        height: 1024,
-        width: 1024,
-        samples: 1,
-        steps: 25,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-          Accept: "application/json",
-        },
+    // Function to call Stability AI API with retry logic
+    const callStabilityAPI = async (retries = 3, delay = 1000) => {
+      let lastError;
+
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          console.log(`API attempt ${attempt}/${retries}`);
+
+          // Call Stability AI API
+          return await axios.post(
+            "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+            {
+              text_prompts: [
+                {
+                  text: prompt,
+                  weight: 1,
+                },
+              ],
+              cfg_scale: 7,
+              height: 1024,
+              width: 1024,
+              samples: 1,
+              steps: 25,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${API_KEY}`,
+                Accept: "application/json",
+              },
+              timeout: 25000, // 25 second timeout
+            }
+          );
+        } catch (error) {
+          lastError = error;
+          console.log(`Attempt ${attempt} failed: ${error.message}`);
+
+          // If we have more retries, wait before trying again
+          if (attempt < retries) {
+            console.log(`Waiting ${delay}ms before retry...`);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            // Increase delay for next attempt (exponential backoff)
+            delay *= 2;
+          }
+        }
       }
-    );
+
+      // If we get here, all retries failed
+      throw lastError;
+    };
+
+    // Call the API with retry logic
+    const response = await callStabilityAPI();
 
     // Extract image data
     const imageData = response.data.artifacts[0];
@@ -101,6 +130,32 @@ app.post("/api/generate", async (req, res) => {
     }
   } catch (error) {
     console.error("Error generating image:", error.message);
+
+    // Log more detailed error information
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error("API Response Error:", {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+
+      // Return more specific error message if available
+      if (error.response.data && error.response.data.message) {
+        return res.status(error.response.status).json({
+          success: false,
+          error: `API Error: ${error.response.data.message}`,
+          details: error.response.data,
+        });
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error("API Request Error (No Response):", error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error("API Request Setup Error:", error.message);
+    }
 
     // Return error response
     res.status(500).json({
