@@ -65,25 +65,40 @@ app.post("/api/generate", async (req, res) => {
     // Extract image data
     const imageData = response.data.artifacts[0];
 
-    // Save the image to a file
-    const timestamp = Date.now();
-    const filename = `image_${timestamp}.png`;
-    const filepath = path.join(__dirname, "public", filename);
+    // For Vercel deployment: return base64 data directly
+    const isVercel = process.env.VERCEL === "1";
 
-    // Convert base64 to buffer and save
-    const buffer = Buffer.from(imageData.base64, "base64");
-    fs.writeFileSync(filepath, buffer);
+    if (isVercel) {
+      // Return the base64 data directly
+      console.log("Running on Vercel, returning base64 data");
+      res.json({
+        success: true,
+        data: {
+          imageUrl: `data:image/png;base64,${imageData.base64}`,
+          prompt,
+        },
+      });
+    } else {
+      // Save the image to a file (for local development)
+      const timestamp = Date.now();
+      const filename = `image_${timestamp}.png`;
+      const filepath = path.join(__dirname, "public", filename);
 
-    console.log(`Image saved to ${filepath}`);
+      // Convert base64 to buffer and save
+      const buffer = Buffer.from(imageData.base64, "base64");
+      fs.writeFileSync(filepath, buffer);
 
-    // Return the image URL
-    res.json({
-      success: true,
-      data: {
-        imageUrl: `/${filename}`,
-        prompt,
-      },
-    });
+      console.log(`Image saved to ${filepath}`);
+
+      // Return the image URL
+      res.json({
+        success: true,
+        data: {
+          imageUrl: `/${filename}`,
+          prompt,
+        },
+      });
+    }
   } catch (error) {
     console.error("Error generating image:", error.message);
 
