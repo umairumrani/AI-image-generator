@@ -37,6 +37,33 @@ app.post("/api/generate", async (req, res) => {
       process.env.STABILITY_API_KEY ||
       "sk-lKVFlxV2g1QDr0wTPVwz9nzFEbmyH1SGIY1RytHAo9xgazTF";
 
+    // Check API credits before generating image
+    try {
+      const creditResponse = await axios.get(
+        "https://api.stability.ai/v1/user/balance",
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+          },
+        }
+      );
+
+      const credits = creditResponse.data.credits;
+      console.log(`Current API credits: ${credits}`);
+
+      if (credits < 0.1) {
+        throw new Error(
+          `Insufficient credits (${credits} remaining). Please add more credits to your Stability AI account.`
+        );
+      }
+    } catch (error) {
+      if (error.message.includes("Insufficient credits")) {
+        throw error;
+      }
+      // If we can't check credits, just continue with the request
+      console.log("Could not check API credits, continuing with request");
+    }
+
     // Function to call Stability AI API with retry logic
     const callStabilityAPI = async (retries = 3, delay = 1000) => {
       let lastError;
