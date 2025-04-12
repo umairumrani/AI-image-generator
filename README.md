@@ -73,6 +73,18 @@ MIT
 
 ## Deployment
 
+### Deploying to Netlify (Recommended)
+
+1. Create a free account on [Netlify](https://www.netlify.com/)
+2. Click on "Add new site" and select "Import an existing project"
+3. Connect your GitHub repository
+4. Use the following settings:
+   - Build command: `npm run build`
+   - Publish directory: `public`
+5. Click on "Show advanced" and add the following environment variable:
+   - `STABILITY_API_KEY`: Your Stability AI API key
+6. Click "Deploy site"
+
 ### Deploying to Render
 
 1. Create a free account on [Render](https://render.com/)
