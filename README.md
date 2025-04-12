@@ -19,27 +19,32 @@ A web application that generates images using AI based on text prompts.
 ## Installation
 
 1. Clone the repository:
+
 ```
 git clone https://github.com/yourusername/ai-image-generator.git
 cd ai-image-generator
 ```
 
 2. Install dependencies:
+
 ```
 npm install
 ```
 
 3. Create a `.env` file in the root directory and add your Stability AI API key:
+
 ```
 STABILITY_API_KEY=your_api_key_here
 ```
 
 4. Start the server:
+
 ```
 node server.js
 ```
 
 5. Open your browser and navigate to:
+
 ```
 http://localhost:3000
 ```
@@ -65,3 +70,30 @@ MIT
 ## Acknowledgments
 
 - [Stability AI](https://stability.ai/) for their image generation API
+
+## Deployment
+
+### Deploying to Render
+
+1. Create a free account on [Render](https://render.com/)
+2. Click on "New +" and select "Web Service"
+3. Connect your GitHub repository
+4. Use the following settings:
+   - Name: ai-image-generator (or your preferred name)
+   - Environment: Node
+   - Build Command: `npm install`
+   - Start Command: `node server.js`
+5. Add the following environment variables:
+   - `STABILITY_API_KEY`: Your Stability AI API key
+   - `PORT`: 10000 (or any port Render supports)
+6. Click "Create Web Service"
+
+### Deploying to Heroku
+
+1. Create a free account on [Heroku](https://www.heroku.com/)
+2. Install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
+3. Login to Heroku: `heroku login`
+4. Create a new Heroku app: `heroku create your-app-name`
+5. Add your Stability AI API key: `heroku config:set STABILITY_API_KEY=your_api_key_here`
+6. Push your code to Heroku: `git push heroku main`
+7. Open your app: `heroku open`
