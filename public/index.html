@@ -188,8 +188,8 @@
       showLoading();
 
       try {
-        // Call our serverless function
-        const response = await fetch('/api/generate-image', {
+        // Call our server API
+        const response = await fetch('/api/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -204,14 +204,13 @@
         }
 
         // Display the image
-        resultImage.src = data.imageUrl;
-        resultPrompt.textContent = data.prompt;
+        resultImage.src = data.data.imageUrl;
+        resultPrompt.textContent = data.data.prompt;
 
         // Set up download button
-        const imageName = data.imageUrl.split('/').pop();
-        downloadBtn.href = data.imageUrl;
-        downloadBtn.download = imageName;
-        downloadBtn.setAttribute('title', `Download ${imageName}`);
+        downloadBtn.href = data.data.imageUrl;
+        downloadBtn.download = `ai-image-${Date.now()}.png`;
+        downloadBtn.setAttribute('title', 'Download Image');
 
         showResult();
 

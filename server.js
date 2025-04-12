@@ -79,8 +79,10 @@ app.post("/api/generate", async (req, res) => {
     // Return the image URL
     res.json({
       success: true,
-      imageUrl: `/${filename}`,
-      prompt,
+      data: {
+        imageUrl: `/${filename}`,
+        prompt,
+      },
     });
   } catch (error) {
     console.error("Error generating image:", error.message);
