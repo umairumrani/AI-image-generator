@@ -35,7 +35,7 @@ app.post("/api/generate", async (req, res) => {
     // Get Stability AI API key from environment variables
     const API_KEY =
       process.env.STABILITY_API_KEY ||
-      "sk-lKVFlxV2g1QDr0wTPVwz9nzFEbmyH1SGIY1RytHAo9xgazTF";
+      "sk-bAMnbg0P1o9Ia31BFASDnqLNhJe1p9U6w5kkDgie84NeEHRx";
 
     // Check API credits before generating image
     try {
