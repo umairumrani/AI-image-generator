@@ -68,9 +68,17 @@ app.post("/api/generate", async (req, res) => {
         try {
           console.log(`API attempt ${attempt}/${retries}`);
 
-          // Call Stability AI API
+          // Call Stability AI API - Using the appropriate endpoint for SDXL 1.0
+          // Try both endpoints to see which one works with your API key
+          const endpoint =
+            attempt % 2 === 1
+              ? "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
+              : "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image";
+
+          console.log(`Trying endpoint: ${endpoint}`);
+
           return await axios.post(
-            "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+            endpoint,
             {
               text_prompts: [
                 {
@@ -79,8 +87,9 @@ app.post("/api/generate", async (req, res) => {
                 },
               ],
               cfg_scale: 7,
-              height: 768,
-              width: 768,
+              // Using dimensions that work with both SDXL and SD 1.6
+              height: 512,
+              width: 512,
               samples: 1,
               steps: 15,
             },
@@ -96,6 +105,26 @@ app.post("/api/generate", async (req, res) => {
         } catch (error) {
           lastError = error;
           console.log(`Attempt ${attempt} failed: ${error.message}`);
+
+          // Log detailed error information
+          if (error.response) {
+            console.log("API Response Error:", {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              data: error.response.data,
+            });
+
+            // Check for common API key issues
+            if (error.response.status === 401) {
+              console.log(
+                "API Key Authentication Error: Your API key may be invalid or not yet activated"
+              );
+            } else if (error.response.status === 403) {
+              console.log(
+                "API Key Permission Error: Your API key may not have permission to use this model"
+              );
+            }
+          }
 
           // If we have more retries, wait before trying again
           if (attempt < retries) {
