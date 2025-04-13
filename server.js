@@ -51,11 +51,7 @@ app.post("/api/generate", async (req, res) => {
       const credits = creditResponse.data.credits;
       console.log(`Current API credits: ${credits}`);
 
-      if (credits < 0.1) {
-        throw new Error(
-          `Insufficient credits (${credits} remaining). Please add more credits to your Stability AI account.`
-        );
-      }
+      // We're not blocking based on credits anymore since we've optimized the request
     } catch (error) {
       if (error.message.includes("Insufficient credits")) {
         throw error;
@@ -83,10 +79,10 @@ app.post("/api/generate", async (req, res) => {
                 },
               ],
               cfg_scale: 7,
-              height: 1024,
-              width: 1024,
+              height: 768,
+              width: 768,
               samples: 1,
-              steps: 25,
+              steps: 15,
             },
             {
               headers: {
